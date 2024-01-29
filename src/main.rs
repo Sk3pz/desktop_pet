@@ -53,7 +53,7 @@ fn main() {
         .with_transparent(true)
         .with_resizable(false)
         .with_active(true)
-        .with_undecorated_shadow(false)
+        //.with_undecorated_shadow(false)
         .with_window_level(WindowLevel::AlwaysOnTop)
         .with_title("Desktop Pet")
         .with_inner_size(PhysicalSize::new(128, 128))
