@@ -10,9 +10,11 @@ use winit::dpi::PhysicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::EventLoop;
 use winit::monitor::MonitorHandle;
-use winit::platform::windows::WindowBuilderExtWindows;
 use winit::window::{WindowBuilder, WindowLevel};
 use crate::pet_handler::Pos;
+
+#[cfg(target_os = "windows")]
+use winit::platform::windows::WindowBuilderExtWindows;
 
 pub const DOG_SIZE: (i32, i32) = (128, 128);
 pub const BORDER_SIZE: (i32, i32) = (16, 16);
