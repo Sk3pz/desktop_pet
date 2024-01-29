@@ -6,3 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+winit = "*"
+image = "*"
+toml = "*"
+serde = { version = "*", features = ["derive"] }
+gif = "*"
+wgpu = "*"
+futures = "*"
+bytemuck = "1.14.1"
+rand = "*"
+anyhow = "*"

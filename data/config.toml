@@ -1,0 +1,4 @@
+[pet]
+name = "pet"
+# valid types: dog
+pet_type = "dog"
