@@ -4,12 +4,13 @@ use image::codecs::gif::GifDecoder;
 use image::{AnimationDecoder, GenericImageView, RgbaImage};
 
 pub struct Gif {
+    pub(crate) name: String,
     frames: Vec<RgbaImage>,
     current: usize,
 }
 
 impl Gif {
-    pub fn new<S: AsRef<Path>>(path: S) -> Self {
+    pub fn new<S: AsRef<Path>>(path: S, name: String) -> Self {
         let file = File::open(path).unwrap();
         let decoder = GifDecoder::new(file).unwrap();
         let frames = decoder.into_frames().map(|frame| {
@@ -18,6 +19,7 @@ impl Gif {
         }).collect();
 
         Self {
+            name,
             frames,
             current: 0,
         }

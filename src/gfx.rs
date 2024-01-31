@@ -6,19 +6,18 @@ use winit::event::KeyEvent;
 use winit::window::Window;
 use crate::{BORDER_SIZE, DOG_SIZE};
 use crate::gif::Gif;
+use crate::pet_handler::{Direction, PetState};
 
 const VERTICES: &[Vertex] = &[
-    // Changed
-    Vertex { position: [0.0, 0.0, 0.0], tex_coords: [0.0, 0.0], },
-    Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 0.0], },
-    Vertex { position: [0.0, 1.0, 0.0], tex_coords: [0.0, 1.0], },
-    Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 1.0], },
+    Vertex { position: [0.0, 0.0, 0.0], tex_coords: [0.0, 1.0], },
+    Vertex { position: [1.0, 0.0, 0.0], tex_coords: [1.0, 1.0], },
+    Vertex { position: [0.0, 1.0, 0.0], tex_coords: [0.0, 0.0], },
+    Vertex { position: [1.0, 1.0, 0.0], tex_coords: [1.0, 0.0], },
 ];
 
 const INDICES: &[u16] = &[
-    0, 1, 4,
-    1, 2, 4,
-    2, 3, 4,
+    0, 1, 2,
+    1, 3, 2,
 ];
 
 #[repr(C)]
@@ -341,6 +340,11 @@ impl<'window> GfxState<'window> {
         (texture_bind_group_layout, diffuse_bind_group)
     }
 
+    fn update_image(&mut self) {
+        let (_, bindgroup) = Self::set_image(&self.device, &self.queue, &self.current_gif);
+        self.diffuse_bind_group = bindgroup;
+    }
+
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             self.size = new_size;
@@ -350,15 +354,15 @@ impl<'window> GfxState<'window> {
         }
     }
 
-    pub fn update(&mut self, size_x: u32, size_y: u32) {
+    pub fn update(&mut self, size_x: u32, size_y: u32, pet_state: &mut PetState) {
         self.current_gif.next();
 
         // generate a new target position if we are at the current one
         if self.target_pos.x == self.current_pos.x && self.target_pos.y == self.current_pos.y {
             // randomly decide if moving or not
             let mut rng = thread_rng();
-            let moving = rng.gen_bool(0.005);
-            let moving2 = rng.gen_bool(0.005);
+            let moving = rng.gen_bool(0.05);
+            let moving2 = rng.gen_bool(0.05);
             if moving && moving2 {
                 let mut rng = thread_rng();
                 self.target_pos.x = rng.gen_range(BORDER_SIZE.0..(size_x as i32) - (BORDER_SIZE.0+DOG_SIZE.0));
@@ -377,15 +381,32 @@ impl<'window> GfxState<'window> {
 
         if x_diff > 0 {
             self.current_pos.x += 1;
+
+            // update pet state
+            pet_state.direction = Direction::Right;
         } else if x_diff < 0 {
             self.current_pos.x -= 1;
+            pet_state.direction = Direction::Left;
+        } else {
+            pet_state.direction = Direction::Stationary;
         }
+
+        let pstate_gif = pet_state.get_gif();
+
+        if self.current_gif.name == pstate_gif.name {
+            self.current_gif.next();
+        } else {
+            self.current_gif = pstate_gif;
+        }
+        self.update_image();
+        pet_state.pos.x = self.current_pos.x;
 
         if y_diff > 0 {
             self.current_pos.y += 1;
         } else if y_diff < 0 {
             self.current_pos.y -= 1;
         }
+        pet_state.pos.y = self.current_pos.y;
 
         // set the window position
         self.window.set_outer_position(self.current_pos);
@@ -399,8 +420,6 @@ impl<'window> GfxState<'window> {
         let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("Render Encoder"),
         });
-
-        // todo: draw sitting animation if target_pos == current_pos, otherwise draw running animation.
 
         // create a scope to encase the mutable borrow of encoder
         {

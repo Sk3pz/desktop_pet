@@ -32,12 +32,12 @@ impl Display for PetType {
 
 #[derive(Clone)]
 pub struct Pos {
-    pub x: f32,
-    pub y: f32,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Pos {
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: i32, y: i32) -> Self {
         Self {
             x, y
         }
@@ -59,6 +59,16 @@ impl Direction {
             Direction::Right => format!("{}_run_right.gif", pet_type),
 
             Direction::Stationary => format!("{}_stationary.gif", pet_type),
+        }
+    }
+}
+
+impl Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Direction::Left => write!(f, "left"),
+            Direction::Right => write!(f, "right"),
+            Direction::Stationary => write!(f, "stationary"),
         }
     }
 }
@@ -87,11 +97,8 @@ impl PetState {
     }
 
     pub fn get_gif(&self) -> Gif {
-        Gif::new(format!("./data/assets/{}", self.direction.to_animation_name(self.pet_type.clone())))
-    }
-
-    pub fn update(&mut self) {
-        todo!()
+        Gif::new(format!("./data/assets/{}", self.direction.to_animation_name(self.pet_type.clone())),
+                 format!("{}-{}", self.name, self.direction))
     }
 
 }

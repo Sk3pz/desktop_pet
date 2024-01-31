@@ -62,7 +62,7 @@ fn main() {
         });
 
     // create the pet state
-    let pet_state = pet_handler::PetState::new(config.pet.clone(), Pos::new(0.0, 0.0));
+    let mut pet_state = pet_handler::PetState::new(config.pet.clone(), Pos::new(0, 0));
 
     // Initialize wgpu
     let mut wgpu_state = gfx::GfxState::new(&window, pet_state.get_gif()).unwrap_or_else(|e| {
@@ -100,7 +100,7 @@ fn main() {
                         // get the available monitors
 
                         // redraw the window
-                        wgpu_state.update(size_x, size_y);
+                        wgpu_state.update(size_x, size_y, &mut pet_state);
 
                         match wgpu_state.render() {
                             Ok(_) => {}
